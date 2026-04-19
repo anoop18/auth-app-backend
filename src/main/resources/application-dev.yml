@@ -1,0 +1,27 @@
+server:
+  port: 8084
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://admin:password123@localhost:27017/auth-app-db?authSource=admin
+      uuid-representation: standard
+      auto-index-creation: true
+logging:
+  level:
+    org.springfremwork.security: DEBUG
+
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:4B9pMXUomR9odIfNqZrsDfvqZ2rdpcauKSqnOHqbhiU=}
+    expiration: ${JWT_EXPIRATION:3600000}
+    issuer: ${JWT_ISSUER:api.substring.com}
+    refresh-ttl-seconds: ${JWT_REFRESH_TTL_SECOND:86400}
+    refresh-ttl-coockie-name: ${JWT_REFRESH_COOCKIE_NAME:refresh_token}
+    cookie-secure: ${JWT_COOKIE_SECURE:true}
+    cookie-http-only: ${JWT_COOKIE_HTTP_ONLY:true}
+    cookie-name-site: ${JWT_COOKIE_NAME_SITE:lax }
+
+
+
