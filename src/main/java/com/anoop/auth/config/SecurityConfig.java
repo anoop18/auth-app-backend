@@ -48,6 +48,10 @@ public class SecurityConfig {
                             response.setContentType("application/json");
                             response.setStatus(401);
                             String message ="Unauthorized access " +authException.getMessage();
+                            String error = (String) request.getAttribute("error");
+                            if (error != null) {
+                                message = error;
+                            }
                          Map<String,String> errorMap =   Map.of("message", message,"status",String.valueOf(401),"error","Unauthorized");
                            var objectMapper= new ObjectMapper();
                            response.getWriter().write(objectMapper.writeValueAsString(errorMap));

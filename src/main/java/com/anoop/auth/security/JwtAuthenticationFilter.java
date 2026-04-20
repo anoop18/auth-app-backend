@@ -52,16 +52,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
           }catch (ExpiredJwtException e){
-          e.printStackTrace();
-          }catch(MalformedJwtException e){
-          e.printStackTrace();
-          }catch (JwtException e){
-          e.printStackTrace();
+         request.setAttribute("error","Token Expired");
           }catch (Exception e){
-          e.printStackTrace();
+              request.setAttribute("error","Invalid Token");
           }
             filterChain.doFilter(request, response);
-          return;
       }
     }
 }
