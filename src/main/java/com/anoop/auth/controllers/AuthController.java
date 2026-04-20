@@ -47,7 +47,7 @@ public class AuthController {
         try {
 return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
         }catch (Exception ex) {
-            throw new IllegalArgumentException("Invalid email or password");
+            throw new BadCredentialsException("Invalid email or password");
         }
     }
 

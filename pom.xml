@@ -51,14 +51,13 @@
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
 			<version>1.6.3</version>
-			<scope>compile</scope>
 		</dependency>
 		<!-- Source: https://mvnrepository.com/artifact/org.mapstruct/mapstruct-processor -->
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct-processor</artifactId>
 			<version>1.6.3</version>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>
 		<!-- Source: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt -->
 		<dependency>
@@ -115,6 +114,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<release>25</release> <!-- ✅ FIX -->
+				</configuration>
 				<executions>
 					<execution>
 						<id>default-compile</id>
