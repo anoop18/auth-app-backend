@@ -4,7 +4,9 @@ import com.anoop.auth.config.UserMapper;
 import com.anoop.auth.dtos.LoginRequest;
 import com.anoop.auth.dtos.TokenResponse;
 import com.anoop.auth.dtos.UserDto;
+import com.anoop.auth.entities.RefreshToken;
 import com.anoop.auth.entities.User;
+import com.anoop.auth.repositories.RefreshTokenRepository;
 import com.anoop.auth.repositories.UserRepository;
 import com.anoop.auth.security.JwtService;
 import com.anoop.auth.service.AuthService;
@@ -20,6 +22,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.Ref;
+import java.time.Instant;
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @AllArgsConstructor
@@ -29,6 +35,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private JwtService jwtService;
     private final UserMapper userMapper;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     //Login
     @PostMapping("/login")
@@ -38,8 +45,18 @@ public class AuthController {
         if(!user.isEnable()){
             throw new BadCredentialsException("User account is disabled");
         }
+        String jti= UUID.randomUUID().toString();
+        var refreshTokenOb = RefreshToken.builder().jtl(jti).
+                user(user)
+                .id(UUID.randomUUID())
+                .createdAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
+                .revoked(false)
+                .build();
+         refreshTokenRepository.save(refreshTokenOb);
          String token = jwtService.generateToken(user);
-        TokenResponse tokenResponse = TokenResponse.of(token,"",jwtService.getAccessTtlSeconds(),userMapper.toDto(user));
+         String refreshToken = jwtService.refreshToken(user,refreshTokenOb.getJtl());
+        TokenResponse tokenResponse = TokenResponse.of(token,refreshToken,jwtService.getAccessTtlSeconds(),userMapper.toDto(user));
         return ResponseEntity.ok(tokenResponse);
     }
 

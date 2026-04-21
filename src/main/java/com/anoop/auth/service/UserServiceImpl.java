@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
         user.setId(UUID.randomUUID());
         user.setCreatedAt(Instant.now());
         user.setUpdatedAt(Instant.now());
-        User savedUser =userRepository.save(user);
+        User savedUser = userRepository.save(user);
         return userMapper.toDto(savedUser);
     }
 
