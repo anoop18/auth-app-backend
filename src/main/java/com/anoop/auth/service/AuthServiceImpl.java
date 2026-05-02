@@ -15,4 +15,9 @@ public class AuthServiceImpl implements AuthService{
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         return userService.createUser(userDto);
     }
+
+    @Override
+    public void logout(String refreshToken) {
+
+    }
 }
