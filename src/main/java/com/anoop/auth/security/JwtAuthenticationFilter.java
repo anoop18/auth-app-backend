@@ -29,34 +29,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/api/v1/auth/login");
+        return path.startsWith("/api/v1/auth");
     }
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
       String header = request.getHeader("Authorization");
       if(header != null && header.startsWith("Bearer ")) {
-          String token= header.substring(7);
+          String token = header.substring(7);
           if(jwtService.isAccessToken(token)){
               filterChain.doFilter(request,response);
               return;
           }
-          try{
-            Jws<Claims> parseClaim =  jwtService.validateToken(token);
-           Claims payload = parseClaim.getPayload();
-         String userId = payload.getSubject();
-         UUID userIdUuid = UUID.fromString(userId);
-      List<GrantedAuthority> authorities = jwtService.getAuthoritiesFromToken(token);
-         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userIdUuid, null, authorities);
-         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+          try {
+              Jws<Claims> parseClaim = jwtService.validateToken(token);
+              Claims payload = parseClaim.getPayload();
+              String userId = payload.getSubject();
+              UUID userIdUuid = UUID.fromString(userId);
+              List<GrantedAuthority> authorities = jwtService.getAuthoritiesFromToken(token);
+              UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userIdUuid, null, authorities);
+              authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+              SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
 
-          }catch (ExpiredJwtException e){
-         request.setAttribute("error","Token Expired");
-          }catch (Exception e){
-              request.setAttribute("error","Invalid Token");
+          } catch (ExpiredJwtException e) {
+              request.setAttribute("error", "Token Expired");
+          } catch (Exception e) {
+              request.setAttribute("error", "Invalid Token");
           }
-            filterChain.doFilter(request, response);
       }
+            filterChain.doFilter(request, response);
+
     }
 }

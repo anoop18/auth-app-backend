@@ -16,7 +16,7 @@ import java.util.UUID;
 public class RefreshToken {
     @Id
     private UUID id;
-    private String jtl;
+    private String jti;
     private User user;
     private Instant createdAt;
     private Instant expiresAt;

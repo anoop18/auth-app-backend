@@ -4,8 +4,6 @@ import com.anoop.auth.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,7 +28,7 @@ import java.util.UUID;
 public class JwtService {
     @Value("${security.jwt.secret}")
     private String secret;
-    @Value("${security.jwt.refresh-ttl-seconds}")
+    @Value("${security.jwt.access-ttl-seconds}")
     private  long accessTtlSeconds;
     @Value("${security.jwt.refresh-ttl-seconds}")
     private  long refreshTtlSeconds;
@@ -56,6 +54,7 @@ public class JwtService {
         return Jwts.builder()
                 .id(UUID.randomUUID().toString())
                 .claim("roles", roles)
+                .claim("typ", "access")
                 .subject(user.getId().toString())
                 .issuer(issuer)
                 .issuedAt(Date.from(now))
@@ -68,6 +67,7 @@ public class JwtService {
         Instant now = Instant.now();
         return Jwts.builder()
                 .id(refreshToken)
+                .claim("typ", "refresh")
                 .subject(user.getId().toString())
                 .issuer(issuer)
                 .issuedAt(Date.from(now))
@@ -86,6 +86,10 @@ public class JwtService {
             throw new IllegalArgumentException("Invalid Token");
         }
      }
+    public Jws<Claims> parse(String token) {
+        return Jwts.parser().verifyWith(getKey()).build().parseSignedClaims(token);
+    }
+
      public boolean isAccessToken(String token) {
          try {
              Claims claims = validateToken(token).getPayload();
