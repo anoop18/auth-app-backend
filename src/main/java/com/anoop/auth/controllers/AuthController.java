@@ -12,6 +12,7 @@ import com.anoop.auth.repositories.UserRepository;
 import com.anoop.auth.security.CookieService;
 import com.anoop.auth.security.JwtService;
 import com.anoop.auth.service.AuthService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,6 +24,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Ref;
@@ -162,19 +164,23 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-        //read refresh token from cookie
-        var cookies = request.getCookies();
-        if (cookies != null) {
-            for (var cookie : cookies) {
-                if (cookie.getName().equals(cookieService.getRefreshTokenCookieName())) {
-                    String refreshToken = cookie.getValue();
-                    authService.logout(refreshToken);
-                    cookieService.clearRefreshCookie(response);
-                    cookieService.addNoStoreHeader(response);
-                    break;
+        readRefreshTokenFromRequest(null, request).ifPresent(token -> {
+            try {
+                if (jwtService.isRefreshToken(token)) {
+                    String jti = jwtService.getJti(token);
+                    refreshTokenRepository.findByJti(jti).ifPresent(rt -> {
+                        rt.setRevoked(true);
+                        refreshTokenRepository.save(rt);
+                    });
                 }
+            } catch (JwtException ignored) {
             }
-        }
-        return ResponseEntity.noContent().build();
+        });
+
+        cookieService.clearRefreshCookie(response);
+        cookieService.addNoStoreHeader(response);
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
 }
